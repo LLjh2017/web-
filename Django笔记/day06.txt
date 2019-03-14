@@ -1,0 +1,251 @@
+2018        12.21        星期五
+
+
+
+
+1. F 和 Q
+  1.F()
+    from django.db.models import F
+    Author.objects.all().update(age = F('age')+10)
+  2.Q()
+    from django.db.models import Q
+    Author.objects.filter(Q(id=1)|Q(age__gt=30))
+2.原生SQL
+  1.查询
+    Entry.objects.raw(sql)
+  2.增删改
+    from django.db import connection
+    def xxx(request):
+        with connection.cursor() as cursor:
+            sql = "update xxxx"
+            cursor.execute(sql)
+3.后台管理
+  1.创建超级用户
+    ./manage.py createsuperuser
+  2.基本管理
+    1.注册
+      admin.py
+        admin.site.register(Entry)
+    2.管理Models
+      1.内部类 Meta
+        class Meta:
+          db_table = ""
+          verbose_name = ""
+          verbose_name_plural = ""
+          ordering = ["-列名"]
+      2.重写 __str__
+      3.为每个属性指定字段选项 - verbose_name
+  3.高级管理
+    1.定义高级管理类
+      class EntryAdmin(admin.ModelAdmin):
+          xxxx xxxx
+    2.属性 - 高级管理功能
+      1.list_display
+      2.list_display_links
+      3.list_editable
+      4.search_fields
+      5.list_filter
+      6.date_hierarchy
+      7.fields
+      8.fieldsets
+4.关系映射
+  1.一对一映射
+    在任意的一个类中增加引用:
+      属性 = models.OneToOneField(Entry)
+
+      在 Wife 增加了对 Author 的引用
+        author = models.OneToOneField(Author)
+=================================================
+1.关系映射
+  1.一对一映射(略)
+  2.一对多映射
+    1.数据库中实现
+      在"多"表中增加外键表示对"一"表的主键的引用
+    2.Django中体现
+      在 "多" 实体类中增加对 "一" 实体类引用
+      出版社(Publisher)对书籍(Book)是一(Publisher)对
+      多(Book)的关系
+      语法: entry = models.ForeignKey(Entry)
+
+      class Publisher(models.Model):
+        xxxx xxxx
+      
+      class Book(models.Model):
+        xxxx xxxx
+        publisher = models.ForeignKey(Publisher)
+
+      注意:
+        在Publisher中会增加一个隐式属性 - book_set,表示的是
+        对Book的一个查询(等同于 Book.objects)
+        1.查询id为1的Publisher对应的所有的书籍
+          publisher=Publisher.objects.get(id=1)
+          publisher.book_set.all()
+        2.查询id为1的Publisher对应的id为1的书籍
+          publisher=Publisher.objects.get(id=1)
+          publisher.book_set.filter(id=1)
+  3.多对多关系
+    1.数据库中体现
+      通过第三张表去关联多对多的两张表
+    2.语法
+      在关联的两个类中的任意一个类,增加:
+        属性 = models.ManyToManyField(Entry)
+      
+      class Author(models.Model):
+        xxxx xxxx
+
+      class Book(models.Model):
+        xxxx xxxx
+        author_set = models.ManyToManyField(Author)
+      
+      在 Book 中,通过 author_set 属性表示对应的所有的
+      Author的查询
+
+      在 Author 中,程序会增加一个隐式属性 book_set,表示对应
+      的所有的 Book 的查询
+
+2.HttpRequest - 请求
+  1.什么是HttpRequest
+    HttpRequest,在Django中就是对请求对象的封装体现,里面封装
+    了所有和请求相关的信息,在Django中,HttpRequest被封装成了
+    request对象,并封装到视图处理函数作为参数,在调用视图的时候
+    会自动传入    
+  2.HttpRequest中的主要内容  
+    1.request.scheme : 请求协议
+    2.request.body : 请求体
+    3.request.path : 请求路径(具体资源路径)
+    4.request.get_host() : 请求的主机地址 / 域名
+    5.request.method : 获取请求方法
+    6.request.GET : 封装了get请求方式所提交的数据
+    7.request.POST : 封装了post请求方式所提交的数据
+    8.request.COOKIES : 封装了cookies中所有的数据
+    9.request.META : 封装了请求的源数据
+      requset.META['HTTP_REFERER'] : 封装了请求源地址
+      如果没有源地址 则获取'/'
+      request.META.get('HTTP_REFERER','/')
+  3.获取请求提交的数据
+    1.get 请求方式
+      request.GET['名称']
+      request.GET.get('名称')
+      request.GET.getlist('名称')
+
+      1.使用表单提交
+        <form method="get">
+          <input type="text">
+          <input type="submit">
+        </form>
+      2.地址栏访问都是get方式提交
+        1.<a href="/xxxx/?uname=xxx"></a>
+        2.JS地址栏提交
+          location.href="/xxx/?uname=xxxx"
+
+      url(r'^get_process/(\d{4})/',xxx_views)
+      http://localhost:8000/get_process/2018
+      注意:以上方式不能是由request.GET进行接收,因为以上方式
+      属于Django的标准而并非HTTP标准
+
+      练习:
+        1.访问地址 /03-login/
+        2.如果是 get 请求的话,使用表单表示以下内容
+          使用 post 方式进行提交,提交地址为 /03-login/
+          用户名  文本框
+          密码    密码框
+          提交按钮
+    
+    2.post 请求方式
+      使用
+        request.POST['名称']
+        request.POST.get()
+        request.POST.getlist()
+      CSRF:Cross Site Request Forgery
+           跨    站点  请求     伪装
+      解决方案：
+        1.取消csrf验证
+          删除 settings.py中MIDDLEWARE中
+          CsrfViewMiddleware 中间件
+        2.在处理函数上增加一个装饰器
+          @csrf_protect
+        3.在表单中增加一个标签
+          {% csrf_token %}
+
+3.使用forms模块处理表单
+  1.forms模块的作用
+    允许将表单与class相结合,并通过class生成表单控件
+  2.使用 forms 模块
+    1.创建 forms.py 文件
+    2.导入 django 的 forms 
+      from django import forms 
+    3.创建class,一个class对应生成一个表单
+      class ClassName(forms.Form):
+          pass 
+    4.在class中创建属性
+      一个属性对应到表单中生成一个控件
+  3.在模板中解析form对象
+    1.注意
+      1.需要自定义 <form>
+      2.需要自定义 按钮
+    2.处理方法
+      在视图中创建 Form 的对象,并发送到模板中等待解析
+      示例：
+        form=RemarkRorm()
+        return render(request,'xx.html',locals()) 
+      在模板中解析form对象的方法：
+      1.手动解析
+        在模板中
+          原理：循环form对象,得到里面的每一个属性,每一个
+               属性就是一个独立的表单控件
+            {% for field in form %}
+              {{field}}:表示的就是控件
+              {{field.label}}:表示的就是label属性值
+            {% endfor %}
+      2.自动解析
+        1.{{form.as_p}}
+          将form对象的每个属性使用p标记包裹起来再输出
+          在网页上
+        2.{{form.as_ul}}
+          将form对象的每个属性使用li标记包裹起来再输出
+          在网页上
+          注意：必须手动提供<ol></ol>或<ul></ul>
+        3.{{form.as_table}}}
+          将form对象的每个属性使用tr标记包裹起来在输出
+          在网页上
+          注意：必须手动提供<table></table>标记
+
+  4.通过 Form 类自动获取表单数据
+    1.通过 forms.Form 的子类的构造器接收表单数据
+      form = RemarkForm(request.POST)
+    2.必须使form通过验证之后再取值
+      form.is_valid()
+        返回True:提交的数据已通过所有的验证,允许取值
+        返回False:提交的数据未通过验证,无法取值
+    3.获取表单的数据
+      通过 form.cleaned_data 来表示提交的数据
+
+  5.forms模块的高级处理
+    将Models 和 Forms 结合到一起使用
+    1.在 forms.py 中创建 class 继承自
+      forms.ModelForm
+    2.创建内部类 Meta,用于关联 Model
+      1.model:指定要关联的实体类
+      2.fields:指定要从Model中取哪些属性生成控件
+        1.取值 "__all__"
+          全部属性都要生成控件
+        2.取值 为一个列表['属性名1','属性名2']
+          将允许生成控件的属性名放在列表中
+      3.labels:指定每个属性所关联的label
+        取值为字典
+        labels={
+            '属性名':'label文本',
+            '属性名':'label文本',
+        }
+  练习:
+    1.完善RegisterForm中的注册功能
+      1.连接数据库
+      2.将已得到的 user 对象保存回数据库
+    2.利用 Models 和 Forms 完成登录操作
+      1.创建 LoginForm 继承自 forms.ModelForm
+      2.通过内部类 Meta 关联 Models
+      3.从 User 类中取出 uname,upwd 两个属性生成表单控件
+      4.在表单中提交时,将数据提交给服务器,验证用户名和密码是否正确
+
+
+

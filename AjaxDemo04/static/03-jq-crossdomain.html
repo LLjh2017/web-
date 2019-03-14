@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="js/jquery-1.11.3.js"></script>
+  <script>
+    $(function(){
+        $("#btnCross1").click(function(){
+            $.ajax({
+                url : 'http://127.0.0.1:5000/03-jq-cross',
+                type : 'get',
+                dataType : 'jsonp',
+                success:function(data){
+                  alert('前端处理后端的数据:'+data);
+                }
+            });
+        });
+        $("#btnCross2").click(function(){
+            $.ajax({
+                url : '/03-server',
+                type : 'get',
+                dataType : 'jsonp',
+                jsonp:'huidiao', //默认callback
+                jsonpCallback:'jsonp_process'
+            });
+        });
+    });
+    function jsonp_process(data){
+        alert("使用方案2发送的请求:"+data);
+    }
+  </script>
+</head>
+<body>
+  <button id="btnCross1">发送跨域请求-方案1</button>
+  <button id="btnCross2">发送跨域请求-方案2</button>
+</body>
+</html>

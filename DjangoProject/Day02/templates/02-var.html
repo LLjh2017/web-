@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{#    <h2>person:{{ person.name() }}</h2>#}
+    <h3>str:{{ str }}</h3>
+    <h3>num:{{ num }}</h3>
+    <h3>tup:{{ tup }}</h3>
+    <h3>tup[0]:{{ tup.0 }}</h3>
+    <h3>list:{{ list }}</h3>
+    {% for x in list %}
+        {% if forloop.first %}
+        <h2 style="background: red">{{ x }}</h2>
+        {% elif forloop.last %}
+        <h2 style="background: yellow">{{ x }}</h2>
+        {% else %}
+        <h2 style="background: pink">{{ x }}</h2>
+        {% endif %}
+    {% endfor %}
+
+    {% for name in list %}
+        <p style="background:
+                {% if forloop.first %}
+                   red
+                {% elif forloop.last %}
+                yellow
+                {% else %}
+                pink
+                {% endif %}">
+        {{ name }}
+        </p>
+    {% endfor %}
+    <h3>list[1]:{{ list.1 }}</h3>
+    <h3>dic['BJ']:{{ dic.BJ }}</h3>
+    <h3>dog:{{ dog }}</h3>
+    <h3>dog.name:{{ dog.name }}</h3>
+    <h3>dog.eat():{{ dog.eat }}</h3>
+    <h3>ret:{{ ret }}</h3>
+</body>
+</html>

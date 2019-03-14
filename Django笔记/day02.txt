@@ -1,0 +1,165 @@
+2018       12.17       星期一
+
+
+
+
+1.URL的使用
+  1.urls.py
+    主路由配置文件,默认在主目录中
+    包含最基本的地址映射
+    作用：通过urls.py中定义好的地址找到对应的视图处理函数
+    from django.conf.urls import url 
+    from django.contrib import admin(主要做后台管理)
+
+    urlpatterns = [
+        url(r'^admin/',admin.site.urls),
+    ]
+
+2.url()函数的语法规范
+  作用：匹配用户的访问路径,交给对应的视图处理程序
+  语法：
+    from django.conf.urls import url 
+    url(regex,views,kwargs=None,name=None)
+      1.regex:允许是正则表达式,匹配请求的url
+      2.views:对应的视图处理函数名
+      3.kwargs:字典,用来向views传参
+      4.name:为url起别名,在地址反向解析时使用
+
+3.通过 url 向视图传参
+  http://localhost:8000/show/2018
+  http://localhost:8000/show/2015
+  http://localhost:8000/show/2017
+
+  1.使用正则表达式传参
+    使用正则表达式的子组传参 ---(),一个子组就是一个参数
+    多个参数的话要使用多个子组表示,并且中间使用/隔开
+    # 当访问路径时 /show/四位数字/的时候
+    url(r'^show/(\d{4})/$',show1_views),
+    在views.py中
+    def show1_views(request,year)
+        pass
+
+
+  2.通过 kwargs 参数传参
+    dic={
+        'name':'wangwc',
+        'age':18,
+    }
+    url(r'^show/$',show3_views,dic)
+    def show3_views(request,name,age):
+        pass 
+
+
+2.Django 中的应用
+  1.什么是应用
+    应用就是网站中的一个独立的程序模块
+    在Django中,主目录一般不处理用户的具体请求,主目录主要
+    做项目的初始化配置以及请求的分发(分布式请求处理)
+    具体的请求是由各个应用去处理的
+  2.创建应用
+    1.manage.py 指令创建
+      ./manage.py startapp 应用名称 
+      示例：
+        ./manage.py startapp news  
+    2.在 settings.py 中进行注册
+      在 INSTALLED_APPS 中追加应用名称即可
+      INSTALLED_APPS=[
+          .... ....,
+          '应用名称',
+      ]
+  3.应用的结构组成
+    1.migrations 文件夹
+      存放数据库的中间文件
+      与模型相关
+    2.__init__.py
+      应用的初始化文件
+    3.admin.py
+      应用的后台管理配置文件
+    4.app.py 
+      应用的属性配置文件
+    5.models.py 
+      模型的映射文件
+    6.tests.py
+      应用的单元测试文件
+    7.views.py
+      定义视图处理函数的文件
+  4.分布式的路由系统(请求地址分发)
+    在每个应用中创建urls.py 结构参考主目录的urls.py 
+    当访问路径是 http://localhost:8000/music/xxx
+    则交给music的urls做进一步处理
+
+    当访问路径是 http://localhost:8000/sport/xxx
+    则交给sport的urls做进一步处理
+
+    当访问路径是 http://localhost:8000/music/
+    则交给 music 应用中的 index_views 去处理
+
+3.Django中的模板(Templates)
+  1.什么是模板
+    模板就是要动态呈现给用户的网页 -- 前后端结合的网页
+    Django的模板引擎是由Django自己提供的,并不是Jinja2
+    所以Django的模板语法与Flask(Jinja2)的语法会有一些不同
+  2.模板的设置
+    在 settings.py 中有一个 TEMPLATES 变量
+    1.BACKEND:指定要使用的模板的引擎
+    2.DIRS:指定模板的存放目录们
+      1.什么都不写：Django会自动的到每个应用中搜索一个叫做
+        templates的目录来作为模板的存放目录
+      2.如果写东西：则按照写好的路径去搜索
+    3.APP_DIRS:是否要自动搜索应用中的目录
+      True:表示要自动搜索应用中的templates目录
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        ,
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+
+  3.模板的加载方式
+    1.通过 loader 对象获取模板,再通过HttpResponse进行响应
+      from django.template import loader
+      #1.通过 loader 加载模板
+         t=loader.get_template('模板名称')
+      #2.将模板渲染成字符串
+         html=t.render()
+      #3.将字符串通过HttpResponse响应给客户端
+         return HttpResponse(html)
+    2.通过 render() 加载并响应模板
+      from django.shortcuts import render 
+      return render(request,'模板名称')
+  4.模板中的语法
+    1.变量
+      1.作用：将后端的数据传递给模板进行显示
+      2.在Django中允许作为变量传递给模板的数据类型
+        字符串,数字,列表,元组,字典,函数,对象
+      3.变量的语法
+        1.变量们必须要封装到字典中才能传递给模板
+          dic={
+              'name':'wangwc',
+              'age':30,
+              'gender':'男',
+          }
+          1.使用 loader 加载模板
+            t = loader.get_template('xxx.html')
+            html = t.render(dic)
+            return HttpResponse(html)
+          2.使用 render 加载模板
+            return render(request,'xxx.html',dic)
+    2.在模板中使用变量
+      {{变量名}}
+      <h3>num:{{ num }}</h3>
+      <h3>tup:{{ tup }}</h3>
+
+

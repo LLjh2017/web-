@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<script>
+    //声明一个js的对象 用来表示 王老师 的信息
+    var obj = {
+        "name":"王老师",
+        "age":30,
+        "gender":"男"
+    };
+    var wife = {
+        "name":"王夫人",
+        "age":40,
+        "gender":"男",
+        "hobby":"王老师"
+
+    };
+    var arr = [
+        {
+                  "name":"王老师",
+                  "age":35,
+                  "gender":"男"
+              },
+        {
+                  "name":"王夫人",
+                  "age":35,
+                  "gender":"男"
+              },
+        {
+                  "name":"王小超",
+                  "age":12,
+                  "gender":"男"
+              }
+          ];
+    //使用 jq 中的 $arr.each() 循环遍历 arr 数组
+    //先将 arr 转换成 jq 的数组 - $(arr)
+    $(arr).each(function (i,obj) {
+        console.log("第"+(i+1)+"个元素");
+        console.log("姓名:"+obj.name);
+        console.log("年龄:"+obj.age);
+        console.log("姓别:"+obj.gender);
+    });
+    for(var i=0;i<arr.length;i++){
+        var obj1 =arr[i];
+        console.log(obj1.name);
+        console.log(obj1.age);
+        console.log(obj1.gender);
+    }
+{#    console.log(obj.name);#}
+{#    console.log(obj.age);#}
+{#    console.log(obj.gender);#}
+{#    console.log(wife.name);#}
+{#    console.log(wife.age);#}
+{#    console.log(wife.gender);#}
+{#    console.log(wife.hobby);#}
+{#    console.log(wife);#}
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>使用/static/的方式访问静态文件</h1>
+<img src="/static/images/wx.png">
+<img src="http://localhost:8000/static/images/wx.png">
+
+<h1>使用 static 标签的方式访问静态文件</h1>
+<img src="{% static 'images/wx.png' %}">
+
+</body>
+</html>

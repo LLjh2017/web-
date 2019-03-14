@@ -1,0 +1,167 @@
+2018       12.7        星期五
+
+
+
+
+1.多对多关系映射
+  1.实现方案
+    1.创建 第三张关联表映射类
+      class UsersGoods(db.Model):
+        __tablename__ = "users_goods"
+        id = db.Column(db.Integer,primary_key=True)
+        users_id = db.Column(db.Integer,db.ForeignKey('users.id'))
+        goods_id = db.Column(db.Integer,db.ForeignKey('goods.id'))
+    2.定义关联属性 和  反向引用关系
+      class Users(db.Model)
+        xxx xxx
+        goods = db.relationship(
+          "Goods",
+          secondary='users_goods',
+          lazy = "dynamic",
+          backref=db.backref('users',lazy="dynamic")
+        )
+    3.利用多对多的关系实现数据的使用
+      1.增加数据
+        user = Users.query.filter_by(id=1).first()
+        good = Goods.query.filter_by(id=2).first()
+        user.goods.append(good)
+        db.session.add(user)
+      2.删除数据
+        user = Users.query.filter_by(id=1).first()
+        good = Goods.query.filter_by(id=2).first()
+        user.goods.remove(good)
+        db.session.add(user)
+      3.查询数据
+        1.user.goods.all()
+        2.user.goods.filter_by(xxx=xxx).all()
+2.cookies
+  1.通过响应对象添加cookie至客户端
+    1.resp=make_response()
+    2.resp=redirect()
+
+    1.增加cookie
+      resp.set_cookie('key','value',max_age)
+    2.获取cookie
+      value=request.cookies['key']
+      value=request.cookies.get('key')
+
+      if 'key' in request.cookies:
+        xxx xxx
+    3.删除cookie
+      resp.delete_cookie('key')
+3.session - 会话
+  1.配置 SECRET_KEY
+    app.config['SECRET_KEY']="xieshadouxing"
+  2.对 session 的数据操作
+    from flask import session
+    1.存
+      session['key']=value
+    2.取
+      value=session['key']
+      value=session.get('key')
+    3.删
+      del session['key']
+
+====================================================
+AJAX
+1.什么是AJAX
+  Asynchronous Javascript And Xml 
+  异步的        JS         和   xml
+
+  xml:eXtensible Markup Language
+  早期是做前后端数据交互模式
+  由于结构繁琐,后来就被抛弃了...被JSON所取代
+
+  AJAX:通过JS异步的向服务器发送请求并接受响应数据,响应
+       数据的格式原来是xml,后来变成了JSON
+  同步请求：
+    当客户端向服务器发送请求时,服务器在处理的过程中,浏览
+    器只能等待,效率较低
+  异步请求：
+    当客户端向服务器发送请求时,服务器在处理过程中,浏览器
+    可以做其他的操作,不需要一直等待
+  AJAX的优点：
+    1.异步 访问
+    2.局部 刷新
+  AJAX的使用场合：
+    1.搜索建议
+    2.表单验证
+    3.前后端完全分离时使用*************
+
+2.AJAX核心对象 - 异步对象(XMLHttpRequest)
+  1.什么是XMLHttpRequest
+    简称为 xhr 
+    称为"异步对象"代替浏览器向服务器发送异步的请求并接收响应
+  2.创建异步对象
+    主流的异步对象是 XMLHttpRequest 类型的,并且所有主流
+    浏览器(IE7+,Chrome,Firefox,Safari,Opera)也都支持
+    XMLHttpRequest,但是在IE低版本浏览器(IE7以及以下),就
+    不支持XMLHttpRequest,需要使用 ActiveXObject()来创建
+    异步对象
+    <script>
+        console.log(window.XMLHttpRequest)
+    </script>
+    在控制台输出null表示不支持
+
+    如果支持 XMLHttpRequest
+      var xhr = new XMLHttpRequest()
+    如果不支持 XMLHttpRequest
+      var xhr = new ActiveXObject("Microsoft.XMLHTTP")
+
+  3.xhr 的成员(重要)
+    1.方法 - open()
+      作用：创建请求
+      语法：open(method,url,async)
+        method:请求方式,取值 'get'或'post'
+        url:请求地址,字符串
+        async:  是否采用异步的方式发送请求
+          true: 表示异步请求
+          false:表示同步请求
+      示例：
+        xhr.open('get','/server',true);
+
+    2.属性 - readyState
+      作用:表示请求的状态,通过不同的请求状态值表示xhr与服务器
+          的交互情况
+          由 0~4 共 5 个值表示5个不同的状态
+          0：表示请求尚未初始化
+          1：表示xhr已经与服务器建立连接
+          2：表示服务器端已经接收请求
+          3：表示请求正在处理中
+          4：响应已经完成
+    3.属性 - status
+      作用：表示服务器端的响应状态码
+      200：表示服务器已经正确处理请求并给出响应
+      404：请求资源不存在
+      500：服务器内部错误
+    4.属性 - responseText
+      作用：接收服务器端响应回来的数据
+    5.事件 - onreadystatechange
+      作用:每当 xhr 的 readyState 值发生改变的时候都要触发
+          的行为操作 - 回调函数
+        关注：
+          1.xhr 的 readyState 是否为4
+          2.xhr 的 status 是否为200
+          如果以上两点同时满足的话,则可以接收响应数据
+          (responseText)
+      示例:
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState==4&&xhr.status==200){
+                console.log(xhr.responseText);
+            }
+        }
+    6.方法 - send()
+      作用：通知 xhr 开始向服务器发送请求
+      语法：xhr.send(body)
+        get ：body的值为 null
+          xhr.send(null)
+        post：body的值为具体请求提交的数据
+          xhr.send("请求数据")
+
+  4.AJAX的操作步骤
+    1.GET请求
+      1.创建 xhr 对象
+      2.创建请求 - open()
+      3.设置回调函数 - onreadystatechange
+        判断状态,接收响应,业务处理
+      4.发送请求 - send()

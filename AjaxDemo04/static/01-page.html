@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/jquery-1.11.3.js"></script>
+    <script>
+
+        /**
+         * 处理后端业务的方法
+         * data : 是由后端传递过来的参数
+         * */
+        function process(data){
+          alert('这是在前端处理的后端的数据:'+data);
+        }
+
+        $(function(){
+            $("#btnSend").click(function(){
+                //1.创建script标记
+                var script = document.createElement("script");
+                //2.指定src和type属性
+                script.type="text/javascript";
+                script.src="http://127.0.0.1:5000/01-server?callback=process";
+                //3.将script标记添加到body中,
+                var body = document.getElementsByTagName('body')[0];
+                body.append(script);
+            });
+        });
+    </script>
+</head>
+<body>
+    <button id="btnSend">发送请求</button>
+</body>
+</html>

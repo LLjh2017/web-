@@ -1,0 +1,467 @@
+2018         12.5         星期三
+
+
+
+1.插入
+  1.创建实体对象
+    user = Users(xxx)
+  2.插入数据
+    db.session.add(user)
+    db.session.commit()
+
+通过配置,执行完视图之后自动提交
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN']=True
+
+2.查询
+  1.基于 db.session
+    1.db.session.query()
+
+      db.session.query(Users)
+      查询users表中所有的列
+
+      db.session.query(Users.id,Users.age)
+      查询users表中id和age两个字段的值
+      返回:查询对象
+
+    2.查询执行函数
+      目的:基于查询对象后得到最终的结果
+        1.all()
+          以列表的方式封装所有查询出来的实体对象数据
+        2.first()
+          返回查询结果中的第一个数据,如果没有查询出结果
+          则返回None
+        3.first_or_404()
+          返回查询结果中的第一个数据,如果没有的话则返回404
+        4.count()
+          返回查询结果的记录数
+          
+    3.查询过滤器函数
+      目的:在查询对象后对数据进行筛选
+      语法:db.session.query(xxx).过滤器函数().执行函数()
+      1.filter()
+        指定条件进行过滤 - where
+        1.db.session.query(Users).filter(Users.id==1).first()
+          select * from users where users.id=1;
+        2.db.session.query(Users).filter(Users.id>1,Users.age<50)
+          select * from users where users.id>1 and users.age < 50;
+        3.
+          from sqlalchemy import or_
+          db.session.query(Users).filter(or_(Users.id>1,Users.age<50)
+          select * from users where users.id>1 or users.age<50;
+        4.db.session.query(Users).filter(Users.email.like('wang%'))
+          select * from users where users.email like 'wang%';
+        5.db.session.query(Users).filter(Users.id.in_([1,3,5]))
+          select * from users where users.id in [1,3,5];
+        6.db.session.query(Users).filter(Users.age.between(30,50))
+          select * from users where users.age between 30 and 50;
+
+      2.filter_by()
+        特点:只做等值判断
+        db.session.query(Users).filter_by(id=1)
+        select * from users where id=1;
+
+      3.limit() / offset()
+        offset() : 指定偏移量
+        limit() : 获取限定数量的行数据
+        db.session.query(Users).limit(5).offset(2).all()
+        select * from users limit 2,5;
+
+      4.order_by()
+        db.session.query(Users).order_by("age desc,id asc")
+
+      5.group_by()
+        作用:分组
+
+        谨慎使用:
+        db.session.query(Users).group_by("age")
+        select * from users group by age;
+
+        推荐使用:
+        db.session.query(Users.age).group_by("age")
+        select users.age from users group by age;
+
+      6.聚合函数
+        语法: 
+          from sqlalchemy import func
+          func.聚合函数(列名)
+        聚合函数:
+          avg(),sum(),max(),min(),count()
+        用法:
+          db.session.query(func.avg(Users.age)).first()
+          db.session.query(func.avg(Users.age)).group_by('age').all()
+
+
+
+        filter() / filter_by()  : where 子句
+        group_by() : group by 子句
+        order_by() : order by 子句  
+        limit(n) / offset(m) : limit m,n
+
+  2.基于 Models 
+    单表,所有列的查询推荐使用Models
+    Models.query.all()
+    Models.query.filter().all()
+    Models.query.filter_by().first()
+=======================================================
+1.ORM操作
+  1.插入
+  2.查询
+  3.修改
+    将users表中id为1的人的年龄更改为60岁
+    1.查
+      user=Users.query.filter_by(id=1).first()
+    2.改
+      user.age=60
+    3.保存
+      db.session.add(user)
+      db.session.commit() 更新到数据库
+  4.删除
+    1.查
+    2.删除
+      db.session.delete(实体对象)
+
+
+2.关系映射
+  1.一对多关系映射
+    一对多在数据库中的实现方式：主外键关系
+      在"多"表中增加一个列,作为外键,引用在"一"表的主键
+    语法：
+      1.在"多"实体类中
+        增加一个属性,引用自"一"表(实体类)的主键列(属性)
+        外键列名 = db.Column(db.Integer,db.ForeignKey
+        ('主表.主键'))
+        # 增加一个列(外键)：引用自course表的主键
+        course_id=db.Column(db.Integer,db.ForeignKey
+        ('course.id'))
+      2.在"一"实体类中
+        增加关联属性以及反向引用关系
+        关联属性:
+          在course对象中,通过一个属性得到对应的所有的teacher
+          关联属性,是应该加在course的实体类中
+        反向引用:
+          在teacher对象中,通过一个属性能够得到对应的course
+          反向引用属性,是应该加在teacher的实体类中
+        增加关联属性和反向引用关系
+          在"一"的实体类中增加:
+          属性名=db.relationship('多表实体类名',关系选项)
+   关系选项:
+    选项名                     说明
+    backref     在关系的另一个模型中添加的反向引用属性名
+      (准备在'多'的实体类中增加对'一'的实体引用的属性名)
+    lazy        指定如何加载当前的相关记录(延迟加载模式)
+                select:首次访问时加载所有记录
+                immediate:源对象只要加载就马上加载相关记录
+                subquery:效果同上,使用子查询的方式加载记录
+                noload:永不加载相关记录
+                dynamic:默认也不加载相关记录,但提供记录的查询
+    uselist     如果设置为False,表示不使用列表表示相关数据而
+                使用标量
+    secondary   指定多对多关系中关联表的名字
+# 增加关联属性和反向引用关系
+# 关联属性 在course对象中通过哪个属性能够得到对应的所有的teacher
+# 反向引用 在teacher对象中通过哪个属性能够得到他对应的course
+teachers = db.relationship('Teacher', 
+              backref="course", lazy="dynamic")
+
+  2.一对一
+    1.在SQLAlchemy中的体现
+      1.在任意一个实体类中,增加对另外一个实体的引用
+        外键列名=db.Column(db.Integer,db.ForeignKey(
+            '主键表.主键列'),unique=True)
+      2.在另一个实体中要增加关联属性和反向引用关系(得到的是对象)
+        属性=db.relationship('关联的实体类',backref="
+        反向引用属性名",uselist=False)
+          uselist:表示 属性 不是一个列表 而是一个 标量
+
+
+
+from flask import Flask, request, redirect
+from flask import render_template
+from flask_sqlalchemy import SQLAlchemy
+import pymysql
+pymysql.install_as_MySQLdb()
+
+
+app=Flask(__name__)
+
+# 指定数据库的配置
+app.config['SQLALCHEMY_DATABASE_URI']="mysql://root:123456@localhost:3306/flask"
+# 指定当视图执行完毕后，自动提交数据库操作
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN']=True
+# 指定每次执行操作时打印原始的SQL语句
+app.config['SQLALCHEMY_ECHO']=True
+# 创建数据库的实例
+db = SQLAlchemy(app)
+
+
+# 创建实体类
+class Users(db.Model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer,primary_key=True)
+    username = db.Column(db.String(30),nullable=False,unique=True)
+    age = db.Column(db.Integer)
+    email = db.Column(db.String(120),unique=True)
+    isActive = db.Column(db.Boolean,default=True)
+    # 增加关联属性和反向引用关系
+    wife = db.relationship('Wife',backref='user',uselist=False)
+    def __init__(self,username,age,email):
+        self.username = username
+        self.age = age
+        self.email = email
+
+    def __repr__(self):
+        return "<Users:%s>" % self.username
+
+class Student(db.Model):
+    __tablename__ = 'student'
+    id = db.Column(db.Integer,primary_key=True)
+    sname = db.Column(db.String(30),nullable=False)
+    sage = db.Column(db.Integer)
+
+    # 增加对Classes的一(Classes)对多(Student)的引用关系
+    classes_id = db.Column(db.Integer, db.ForeignKey('classes.id'))
+
+    def __init__(self,sname,sage):
+        self.sname = sname
+        self.sage = sage
+    def __repr__(self):
+        return "<Student:%r>"%self.sname
+
+class Teacher(db.Model):
+    __tablename__ = 'teacher'
+    id = db.Column(db.Integer, primary_key=True)
+    tname = db.Column(db.String(30), nullable=False)
+    tage = db.Column(db.Integer)
+    tbirth = db.Column(db.Date)
+    # 增加一个列(外键)  引用自course表的主键
+    course_id = db.Column(db.Integer,db.ForeignKey("course.id"))
+
+    def __init__(self,tname,tage,tbirth):
+        self.tname = tname
+        self.tage = tage
+        self.tbirth = tbirth
+    def __repr__(self):
+        return "<Teacher:%r>"%self.tname
+
+class Course(db.Model):
+    __tablename__ = 'course'
+    id = db.Column(db.Integer, primary_key=True)
+    cname = db.Column(db.String(30), nullable=False)
+
+    # 增加关联属性和反向引用关系
+    # 关联属性 在course对象中通过哪个属性能够得到对应的所有的teacher
+    # 反向引用 在teacher对象中通过哪个属性能够得到他对应的course
+    teachers = db.relationship('Teacher', backref="course", lazy="dynamic")
+
+    def __init__(self,cname):
+        self.cname = cname
+    def __repr__(self):
+        return "<Course:%r>"%self.cname
+
+class Classes(db.Model):
+    __tablename__ = 'classes'
+    id = db.Column(db.Integer,primary_key=True)
+    name = db.Column(db.String(30),nullable=False)
+
+    def __init__(self,name):
+        self.name = name
+
+    def __repr__(self):
+        return "<Classes:%r>" % self.name
+
+    # 增加关联属性和反向引用关系
+    students = db.relationship('Student',backref='classes',lazy='dynamic')
+
+
+class Wife(db.Model):
+    __tablename__ = 'wife'
+    id = db.Column(db.Integer,primary_key=True)
+    wname = db.Column(db.String(30))
+    # 增加对 Users 的一对一的引用关系
+    users_id = db.Column(db.Integer,db.ForeignKey("users.id"))
+
+
+# 将创建好的实体类映射回数据库
+db.create_all()
+
+
+@app.route('/01-add')
+def add_views():
+    # 创建Users对象,并插入到数据库中
+    users = Users('王老师',35,'mrwang@163.com')
+    db.session.add(users)
+    # db.session.commit()
+    return 'Add OK'
+
+
+@app.route('/02-register',methods=['GET','POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('02-register.html')
+    else:
+        # 接收前端传递过来的数据
+        uname = request.form.get('uname')
+        uage = request.form.get('uage')
+        uemail = request.form.get('uemail')
+        # 将数据构建成实体对象
+        user = Users(uname,uage,uemail)
+        # 将数据保存回数据库
+        db.session.add(user)
+        # db.session.commit()
+        return "Register Success"
+
+@app.route('/03-query')
+def query_views():
+    query = db.session.query(Users).all()
+    print(query)
+    return "Query OK"
+
+
+@app.route('/04-queryall')
+def queryall():
+    users = Users.query.filter_by(isActive=True).all()
+    return render_template('04-queryall.html',users=users)
+
+
+@app.route('/05-update',methods=['GET','POST'])
+def update_views():
+
+    if request.method == 'GET':
+
+        # 接收前端传递过来的参数 id
+        id = request.args.get('id')
+        # 根据id查询出对应的对象
+        user = Users.query.filter_by(id=id).first()
+        # 将查询出来的对象发送到05-update.html中进行显示
+        return render_template('05-update.html',user=user)
+    else:
+        # 查
+        id = request.form.get('id')
+        user = Users.query.filter_by(id=id).first()
+        # 改
+        username = request.form.get('uname')
+        age = request.form.get('uage')
+        email = request.form.get('uemail')
+        user.username = username
+        user.age = age
+        user.email = email
+        # 保存
+        db.session.add(user)
+        return redirect('/04-queryall')
+
+
+@app.route('/07-delete')
+def delete():
+    # 查
+    id = request.args.get('id')
+    user = Users.query.filter_by(id=id).first()
+    # 删
+    # db.session.delete(user)
+    # 以修改来表示删除：将users表的isActive的值更改为false
+    user.isActive = False
+    db.session.add(user)
+    return redirect('/04-queryall')
+
+
+@app.route('/08-insert')
+def insert_views():
+    c1 = Course('钢管舞')
+    c2 = Course('爵士舞')
+    db.session.add(c1)
+    db.session.add(c2)
+    db.session.commit()
+    return "Insert OK"
+
+
+@app.route('/09-register-teacher')
+def register_teacher():
+    # 方案1 通过关联属性关联数据
+    # teal = Teacher('魏老师',40,'1985-10-01')
+    # teal.course_id = 1
+    # db.session.add(teal)
+
+    # 方案2 通过反向引用属性关联数据
+    tea2 = Teacher('王老师',45,'1975-10-01')
+    # 查询ID为1的Course的信息
+    course = Course.query.filter_by(id=1).first()
+    tea2.course = course
+    db.session.add(tea2)
+
+    return 'Register Teacher OK'
+
+@app.route('/10-query')
+def query10_views():
+    # 通过course对象查询对应所有的teacher们
+    course = Course.query.filter_by(id=1).first()
+    # teachers提供了对应的teacher的查询
+    teachers = course.teachers.all()
+    print("课程名称:"+course.cname)
+    print("对应的老师们:")
+    for tea in teachers:
+        print("姓名:%s,生日:%s"%(tea.tname,tea.tbirth))
+
+    # 通过 teacher 得到对应的 course
+    tea = Teacher.query.filter_by(id=1).first()
+    # 得到course的对象
+    course = tea.course
+    print("教师姓名:%s"%tea.tname)
+    print("所教课程:%s"%course.cname)
+    return 'Query OK'
+
+# 1.增加实体类Classes表示一个班级
+# id:班级的id，主键自增
+# name:班级名称
+# 2.增加Classes对Student一对多增加关联属性以及反向引用关系
+# 3.向Classes表中增加2~3条数据
+#    1  1806
+#    2  1807
+#    3  1808
+# 4.访问路径/11-register-stu
+#   1.get请求的话
+#   2.post请求的话，将 姓名 年龄 班级 保存进数据库
+# 5.访问路径/12-students
+
+
+@app.route('/11-register-stu',methods=['GET','POST'])
+def register_stu():
+    if request.method == 'GET':
+        # 查询 classes 表中所有的数据
+        list = Classes.query.all()
+        return render_template('11-register-stu.html',list=list)
+    else:
+        # 先获取前端提交的数据
+        sname = request.form.get('sname')
+        sage = request.form.get('sage')
+        classes_id = request.form.get('classes')
+        # 构建Student对象
+        stu = Student(sname,sage)
+        stu.classes_id = classes_id
+        # 将对象保存进数据库
+        db.session.add(stu)
+        return redirect('/12-students')
+
+
+@app.route('/12-students')
+def student():
+    list = Student.query.all()
+    return render_template('/12-students.html',list=list)
+
+
+
+@app.route('/13-wife')
+def wife_users():
+    # 通过wife找users
+    # wife = Wife.query.filter_by(id=3).first()
+    # user = wife.user
+    # print('Wife:%s'% wife.wname)
+    # print('User:%s' % user.username)
+    # 通过users找wife
+    user = Users.query.filter_by(id=3).first()
+    wife = user.wife
+    print('Wife:%s' % wife.wname)
+    print('User:%s' % user.username)
+    return 'Query OK'
+    
+
+if __name__ == "__main__":
+    app.run(debug=True,host='0.0.0.0')

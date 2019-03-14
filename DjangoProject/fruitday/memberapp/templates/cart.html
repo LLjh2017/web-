@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+<script type="text/javascript">
+  function deletea(cart_id) {
+      $.ajax({
+          url:'/cartinfo/deletecart',
+          type:'get',
+          datatype:'json',
+          data:{
+              'cart_id':cart_id,
+          },
+          success:function (data) {
+              location.href = "{% url 'cart' %}"
+          },
+          error:function (error) {
+              alert('添加失败,原因见'+error)
+          }
+      })
+  }
+</script>
+  {% for cart in find_goods %}
+    {{ cart.good.title }}
+    {{ cart.good.price }}
+    {{ cart.ccount }}
+    <button onclick="deletea({{ cart.id }})">删除</button>
+    <br>
+  {% endfor %}
+  总计：{{ mycartc }}件商品
+  <button>结算</button>
+
+</body>
+</html>

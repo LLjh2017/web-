@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="js/jquery-1.11.3.js"></script>
+  <script>
+    function process_flight(data){
+      $("#flightNO").html(data.flightNO);
+      $("#from").html(data.from);
+      $("#to").html(data.to);
+      $("#time").html(data.time);
+    }
+
+    $(function(){
+        $("#btnCross").click(function(){
+          var script = document.createElement("script");
+          script.type = "text/javascript";
+          script.src = "http://127.0.0.1:5000/02-server?callback=process_flight";
+          var body = $("body")[0];
+          body.append(script);
+        });
+
+        $("#btnJqCross").click(function(){
+            $.ajax({
+                url:'http://127.0.0.1:5000/02-server',
+                type:'get',
+                dataType:'jsonp',
+                /*方案2*/
+               jsonp:'callback',
+                jsonpCallback:'process_flight'
+
+                /*方案1*/
+                /*success:function(data){
+                    $("#flightNO").html(data.flightNO);
+                    $("#from").html(data.from);
+                    $("#to").html(data.to);
+                    $("#time").html(data.time);
+                }*/
+            });
+        });
+    });
+  </script>
+</head>
+<body>
+  <button id="btnCross">跨域请求</button>
+  <button id="btnJqCross">跨域请求-jq</button>
+  <div>
+    <p>
+      航班号: <span id="flightNO"></span>
+    </p>
+    <p>
+      出发: <span id="from"></span>
+    </p>
+    <p>
+      到达: <span id="to"></span>
+    </p>
+    <p>
+      时间: <span id="time"></span>
+    </p>
+  </div>
+</body>
+</html>

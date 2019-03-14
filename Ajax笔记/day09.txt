@@ -1,0 +1,170 @@
+2018       12.10       星期一
+
+
+
+
+1.AJAX
+  1.同步 和 异步
+    同步:向服务器发送请求时,浏览器要一直等待
+    异步:向服务器发送请求时,服务器在处理过程中
+        浏览器可以做其他的行为
+  2.异步对象 - xhr
+    function createXhr(){
+      var xhr = null;
+      if(window.XMLHttpRequest){
+        xhr = new XMLHttpRequest();
+      }else{
+        xhr = new ActiveXObject("Microsoft.XMLHTTP");
+      }
+      return xhr;
+    }
+  3.xhr 的成员
+    1.方法 - open(method,url,async)
+      async : true   表示使用异步的方式
+    2.属性 - readyState
+      值 4   表示服务器端已经给出响应
+    3.属性 - status
+      值 200 表示服务器端正确接收请求并给出响应
+    4.属性 - responseText
+      服务器端响应回来的文本
+    5.事件 - onreadystatechange
+      每当 readyState 的值发生改变的时候都要回来调用的函数
+
+      xhr.onreadystatechange = function(){
+        if(xhr.readyState==4 && xhr.status == 200){
+          var resText = xhr.responseText;
+          //业务处理
+        }
+      }
+    6.方法 - send(body)
+      body  : 请求体
+        get : null
+        post : 传递的数据
+  4.使用 ajax 发送 get 请求的步骤
+    1.创建 createXhr
+    2.创建请求
+    3.设置回调函数
+    4.发送请求
+=================================================
+1.AJAX 发送 post 请求
+  1.请求数据 要 放在 send()提交的
+    var xhr = creatXhr():
+    xhr.open('post','xxx',true)
+    xhr.onreadystatechange = function(){
+        xxxx xxxx
+    }                  
+    xhr.send("uname=wangwc&uage=35");
+  2.Content-Type 的问题
+    AJAX的post请求,默认会将Content-Type消息头的值更改为
+    "text/plain",所以导致提交参数无法获取
+    解决方案：将Content-Type的值更改为
+    "application/x-www-form-urlencoded"即可
+    xhr.setRequestHeader("Content-Type",
+    "application/x-www-form-urlencoded");
+
+
+<script src="/static/js/common.js"></script>
+<script src="/static/js/jquery-1.11.3.js"></script>
+<script>
+    $(function () {
+        $("#btnPost").click(function () {
+            var xhr = createXhr();
+            xhr.open('post','/01-server',true);
+            xhr.onreadystatechange = function () {
+                if(xhr.readyState==4 && xhr.status==200){
+                    $("#show").html(xhr.responseText);
+                }
+            }
+            //设置content.type请求消息头
+            xhr.setRequestHeader("Content-Type",
+                "application/x-www-form-urlencoded");
+            xhr.send("uname=wangwc&uage=35");
+        });
+    });
+</script>
+</head>
+<body>
+    <button id="btnPost">发送AJAX请求</button>
+    <div id="show"></div>
+</body>
+
+
+
+2.JSON
+  1.JSON介绍
+    JSON：JavaScript Object Notation
+          JS         对象   表现形式
+    将复杂结构的字符串转换成JS对象的表现形式,方便前端解析
+  2.JSON的表现
+    1.JSON表示单个对象
+      1.使用{}表示一个对象
+      2.在{}中使用key:value的形式来表示属性(数据)
+      3.key必须使用""引起来
+      4.value如果是字符串的话,也必须使用""引起来
+      5.多对key:value之间使用,隔开
+    2.使用JSON表示一个数组
+      1.使用[]来表示一个数组
+      2.数组中允许包含若干字符串 或 JS对象
+        1.使用JSON数组来表示若干字符串
+          var arr = ["王老师","王夫人","王小超"];
+        2.使用JSON数组来表示若干对象
+          通过一个数组保存三个人的信息(name,age,gender)
+          var arr = [
+              {
+                  "name":"王老师",
+                  "age":35,
+                  "gender":"男"
+              },
+              {
+                  "name":"王夫人",
+                  "age":35,
+                  "gender":"男"
+              },
+              {
+                  "name":"王小超",
+                  "age":12,
+                  "gender":"男"
+              }
+          ];
+  3.使用jQuery循环遍历数组
+    1.$arr.each();
+      $arr : 是jQuery中的数组
+      语法：
+        $arr.each(function(i,obj){
+            i:遍历出来的元素的下标
+            obj:遍历出来的元素
+        });
+        示例:
+          $(arr).each(function (i,obj) {
+              console.log("第"+(i+1)+"个元素");
+              console.log("姓名:"+obj.name);
+              console.log("年龄:"+obj.age);
+              console.log("姓别:"+obj.gender);
+          });
+
+    2.$.each()
+      $ --> jQuery
+      语法：$.each(arr,function(i,obj){
+
+      });
+
+
+  4.后台处理JSON
+    1.前后端 JSON 的处理流程
+      1.在后端先查询出/得到复杂结构的数据
+      2.在后端将复杂结构的数据转换成符合JSON格式的字符串
+      3.在后端将JSON格式的字符串响应给前端
+      4.在前端将JSON格式的字符串再转换为JS对象/数组
+      5.在前端对JS对象/数组 进行循环遍历/取值操作
+    2.在Python中的JSON处理
+      在Python中可以使用 json 类完成JSON的转换
+
+      import json
+      jsonStr = json.dumps(元组/列表/字典)
+      return jsonStr
+    3.前端中的JSON处理
+      由于服务器端响应回来的数据是String,所以在前端对复杂结构
+      的数据必须先转换成JS对象或数组,然后再取值或循环遍历
+      
+      在 JS 中：
+      var js对象 = JSON.parse(JSON字符串)

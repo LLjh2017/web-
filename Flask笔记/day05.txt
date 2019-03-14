@@ -1,0 +1,180 @@
+2018        12.4        星期二   
+
+
+
+
+1.响应对象
+  1.通过 make_response()构建响应对象
+    from flask import make_response
+    resp=make_response("xxx")
+    通过resp设置其他响应操作
+    return resp
+  2.重定向
+    由服务器通知浏览器向一个新的地址发送请求
+    from flask import redirect 
+    return redirect("地址")
+2.文件上传
+  1.注意问题
+    表单中
+    1.method必须为post
+    2.enctype必须为mutipart/form-data
+  2.服务器端
+    1.获取上传的文件
+      f = request.files['xxx']
+    2.将文件保存至指定的目录处
+      f.save('路径')
+      注意：
+        1.路径要精确到文件名
+        2.路径中所涉及到的目录必须要提前创建好
+3.Models
+  1.什么是模型
+    数据库中的表在编程语言中被"类化"后的体现
+  2.模型框架 - ORM
+    ORM：Object Relational Mapping
+    Python：SQLAlchemy
+  3.ORM 的三大特征
+    1.数据表到编程类的映射
+    2.数据类型的映射
+    3.关系映射
+      一对一,一对多,多对多
+  4.Flask 中使用 ORM框架完成模型的创建
+    1.配置
+      app.config['SQLALCHEMY_DATABASE_URI']="mysql://...
+    2.创建数据库实例
+      db=SQLAlchemy(app)
+    3.创建模型
+      class CLASSNAME(db.Model):
+      __tablename__"TABLENAME"
+      COLUMN_NAME=db.Column(db.TYPE,OPTIONS)
+
+      CLASSNAME:类名,模型名,根据表名而定义出来的
+      TABLENAME:指定当前模型类所关联的表
+      COLUMN_NAME:属性,映射的表中的列
+      TYPE:映射到列的数据类型
+      OPTIONS:列选项
+
+      db.TYPE 列的数据类型:
+      类型名         python类型          说明
+      Integer       int              普通整数,32位
+      SmallInteger  int              小范围整数,16位
+      BigInteger    long             不限精度的整数
+      Float         float            浮点类型
+      Numeric       decimal.Decimal  定点类型
+      String        str              变长字符串
+      Text          str              变长字符串
+      Boolean       bool             布尔值
+      Date          datetime.date    日期
+      Time          datetime.time    时间
+      DateTime      datetime.datetime日期和时间
+
+      OPTIONS 列选项
+        选项名               说明
+      primary_key  如果设置为True表示该列为主键
+      unique       如果设置为True表示该列的值唯一
+      index        如果设置为True表示该列要创建索引
+      nullable     如果设置为True表示该列允许为空,默认允许为空
+      default      指定该列的默认值
+===========================================================
+
+
+1.数据库操作
+  1.插入
+    1.创建实体类的对象
+    2.完成插入
+      db.session.add(实体对象)
+      db.session.commit()
+# 指定数据库的配置
+app.config['SQLALCHEMY_DATABASE_URI']="mysql://root:123456@localhost:3306/flask"
+# 指定当视图执行完毕后，自动提交数据库操作
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN']=True
+# 指定每次执行操作时打印原始的SQL语句
+app.config['SQLALCHEMY_ECHO']=True
+
+  2.查询
+    1.基于 db.session 进行查询
+      1.db.session.query(Models1,Models2,...)
+        参数：要查询的实体类(表),如果是多个实体类的话,相当于
+             要做多表连接查询
+        返回：对应的类的一个查询对象
+      2.查询执行函数
+        目的：在query()的基础上得到最终的数据
+        语法：db.session.query(Models).查询执行函数()
+        1.all():以列表的方式返回query对象中所有的查询数据
+        2.first():返回query对象中的第一个查询结果,如果没有
+          结果,返回None
+        3.first_or_404():返回query对象中的第一个查询结果
+          如果没有结果的话则终止程序并响应404
+        4.count():返回query对象中的查询结果的数量
+      3.查询过滤器函数
+        作用：专门对数据进行筛选,返回部分行数据
+        语法：db.session.query().过滤器函数().执行函数()
+
+        1.filter() 按指定条件进行过滤(单表,多表,定值,不定值)
+          注意：条件必须由 实体类.属性 组成
+          1.查询年龄大于 30 的多人的信息
+            db.session.query(Users).filter(
+            Users.age>30).all()
+          2.查询id为1的人的信息
+            db.session.query(Users).filter(
+            Users.id==1).first()
+            注意：filter()做等值判断时必须使用 ==
+          3.查询年龄大于30并且id大于1的用户的信息
+            db.session.query(Users).filter(
+            Users.age>30,Users.id>1).all()
+          4.查询年龄大于30或者id为1的用户的信息
+            查询或者操作，需要使用or_()
+            from sqlalchemy import or_
+            filter(or_(条件1,条件2))
+            db.session.query(Users).filter(or_(
+            Users.age>30,Users.id>1)).all()
+          5.查询 email 中包含'w'字符的Users的信息
+            语法：db.session.query(Users).filter(
+            Users.email.like('%w%'))
+          6.查询 id 在[2,4]列表中的Users的信息
+            db.session.query(Users).filter(Users.id.
+            in_([2,4])).all()
+          7.查询Users中age在 45~50 之间的人的信息
+            db.session.query(Users).filter(Users.age.
+            between(45,50)).all()
+        2.filter_by() 按等值条件进行过滤
+          注意：只能做等值判断,不能做不等值
+          查询id为1的users的信息
+          db.session.query(Users).filter_by(id=1).first()
+        3.limit() 按限制行数量获取结果
+          1.获取 Users 表中的前2条数据
+            db.session.query(Users).limit(2).all()
+            select * from Users limit 2;
+          2.获取 Users 表中过滤前3条数据后剩余的前2条数据
+            select * from Users limit 3,2;
+            db.session.query(Users).limit(2).
+            offset(3).all()
+        4.order_by() 按指定列进行排序
+          select * from Users order by id desc;
+          先按照age倒序排序,再按照id升序排序
+          select * from Users order by age desc,id asc;
+          db.session.query(Users).order_by("
+          age desc,id asc").all()
+        5.group_by() 按指定条件进行分组
+          1.将 Users 表中的数据按年龄进行分组
+          db.session.query(Users.age).group_by('age').all()
+        6.聚合函数
+          1.查询users表中所有人的平均年龄
+            select avg(age) from Users;
+            from sqlalchemy import func 
+            db.session.query(func.avg(Users.age).
+            label('avgAge')).all()
+          2.Users表中，按年龄分组，再查每组年龄的平均值
+            select age,avg(age) from Users group by age;
+            db.session.query(func.avg(Users.age)).
+            group_by('age').all()
+          1.func.avg():求平均值
+          2.func.sum():求和
+          3.func.max():求最大值
+          4.func.min():求最小值
+          5.func.count():求不为空的数量
+    2.基于 Models 类进行查询
+      Models.query.查询过滤器函数().查询执行函数()
+      单表,所有列的查询推荐使用Models
+      Models.query.all()
+      Models.query.filter().all()
+      Models.query.filter_by().all()

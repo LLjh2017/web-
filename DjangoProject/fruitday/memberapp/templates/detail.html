@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <title>详情页</title>
+</head>
+<body>
+  {{ goodone.title }}
+  {{ goodone.desc }}
+  {{ goodone.price }}
+  <img src="/{{ goodone.picture }}" alt="">
+  <button onclick="addcart({{ goodone.id }})">加入购物车</button>
+  <script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+
+  <script type="text/javascript">
+    function addcart(goodid) {
+        $.ajax({
+            url:'/cartinfo/addcart/',
+            type:'get',
+            datatype:'json',
+            data:{
+                'goodid':goodid,
+                'gcount':1,
+            },
+            success:function(data){
+                location.href = {% url 'cart' %}
+            },
+            error:function (error) {
+                alert('添加失败,请检查网络并重新添加,失败原因见'+error)
+            }
+        })
+    }
+  </script>
+
+</body>
+</html>

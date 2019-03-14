@@ -1,0 +1,108 @@
+ 2018       12.11        星期二  
+
+
+
+
+1.使用AJAX发送POST请求
+  1.发送的数据放在 send() 中
+    xhr.send("uname=xxx&uage=xxx")
+  2.设置 Content-Type 的请求消息头
+    xhr.setRequestHeader("Content-Type",
+      "application/x-www-form-urlencoded")
+2.JSON
+  1.什么是JSON
+    JavaScript Object Notation
+  2.JSON 格式
+    1.JSON表示单个对象
+      1.使用 {} 来表示单个对象
+      2.在 {} 中 使用 key:value 的形式来表示属性(数据)
+      3.key 必须使用 "" 引起来
+      4.value 如果是字符串的话,也必须使用 "" 引起来
+      5.多对 key:value 之间使用 , 隔开
+    2.JSON表示一组对象
+      使用[]表示一组对象
+      1.["","",""]
+      2.使用[]表示若干JS对象
+        [
+          {
+            "key":"value",
+            "key":"value"
+          },
+          {
+            "key":"value",
+            "key":"value"
+          }
+        ]
+  3.在 jQuery 中提供的循环遍历的方法
+    1.$arr.each(function(i,obj){});
+      $arr : 表示的是jq的数组
+    2.$.each(arr,function(i,obj){});
+      arr : 表示的是原生的JS数组
+
+  4.前后端处理JSON
+    1.前后端处理JSON的流程
+      1.在后端获取对应的数据
+      2.在后端将数据转换为符合JSON格式的字符串
+      3.在后端将符合JSON格式的字符串进行响应
+      4.在前端将响应回来的字符串转换为JS对象/数组
+    2.Python 中对 JSON的处理
+      在 Python 中只能对元组,列表,字典 进行JSON的处理
+      并且其内部也必须是允许被JSON序列化的
+
+      import json
+      jsonStr = json.dumps(元组|列表|字典)
+      resp = make_response(jsonStr)
+      return resp
+    3.前端中对JSON的处理
+      将后端传递过来的数据转换成JS对象/数组
+
+      var obj = JSON.parse(jsonStr)
+
+=================================================
+
+1.使用 jquery 操作 AJAX
+  1.$obj.load(url[,data][,callback])
+    作用:远程加载数据并加载到$obj元素中
+    url : 远程请求的地址
+    data : 要传递的参数
+      1.字符串拼参数,采用 get 方式发送请求
+      2.使用 JSON 格式拼参数,采用 post 方式发送请求
+    callback : 请求和响应完成之后的回调函数
+      function(resText,statusText){
+        resText : 响应回来的文本
+        statusText : 响应回来的状态文本
+      }
+      
+  2.$.get(url[,data][,callback][,type])
+    作用:使用 get 方式异步的向服务器发送请求
+    url : 远程请求的地址
+    data : 请求参数 (可选)
+    callback : 响应成功后的回调函数(可选)
+      function(resText){
+        resText : 表示响应回来的数据
+      }
+    type : 响应回来的数据的数据类型
+      1.html : 响应回来的文本当成HTML文本处理
+      2.text : 响应回来的文本当成text文本处理
+      3.json : 响应回来的文本当成JSON进行处理(转换成JS对象)
+
+
+  3.$.post(url[,data][,callback][,type])
+    各参数作用同 $.get 
+
+
+@app.route("/05-register",methods=["POST"])
+def register_views():
+    uname = request.form.get('name')
+    user = Login.query.filter_by(lname=uname).first()
+    if user:
+        dic = {
+            "status":1,
+            "text":"用户名已经存在"
+        }
+    else:
+        dic = {
+            "status": 0,
+            "text": "通过"
+        }
+    return json.dumps(dic)

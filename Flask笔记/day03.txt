@@ -1,0 +1,116 @@
+2018        11.30       星期五
+ 
+ 
+
+
+1.模板
+  1.模板的继承
+    1.什么是模板的继承
+      模板的继承类似于类的继承
+      如果一个模板中所出现的大量内容与另一个模板相同的话
+      那么就可以使用继承的方式来简化模板的开发
+    2.语法
+      1.父模板中
+        需要在父模板中定义出哪些内容在子模板中是可以被重写的
+        {% block 块名 %}
+        {% endblock %}
+        block:定义允许在子模板中被修改的内容
+          1.在父模板中正常显示,没有任何影响
+          2.在子模板中可以被重写
+      2.子模板中
+        1.使用{% extends '父模板名称' %}来表示继承
+        2.使用{% block 块名 %} 来重写父模板中同名块的内容
+          {% block 块名 %}
+            会覆盖掉父模板中同名block的内容
+          {% endblock %} 
+          
+2.自定义错误页面
+  404:Not Found
+  500:Internerl Server Error
+  1.404 的错误处理
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'),404
+  2.500 的错误处理
+    @app.errorhandler(500)
+    def internerl_server_error(e):
+        return render_template('500.html'),500
+    404.html  500.html 需要自定义
+
+3.修改配置
+  app=Flask(__name__,template_folder='muban',
+  static_folder="sta",
+  static_url_path="/s")
+  1.template_folder
+    指定保存模板的文件夹名称
+  2.static_folder
+    指定保存静态文件的文件夹名称
+  3.static_url_path
+    指定访问静态文件的路径
+
+4.请求(request) 和 响应(response)
+  1.http 协议
+    Request:请求消息
+      请求起始行
+        请求方式
+        请求路径
+        协议以及版本号
+      请求消息头
+        key:value
+        Referer:http://www.tmooc.cn
+          Referer请求消息头：用于记录请求源地址
+      请求主体
+        由客户端浏览器带给服务器的数据或信息
+        只有post 和 put 请求才有请求主体
+    Response:响应消息
+      响应起始行
+        协议和版本号
+        响应状态码
+        原因短句
+      响应消息头
+        key:value
+        Content-Type:image/png  
+          Content-Type消息头：告诉浏览器响应回来的内容是
+            什么类型
+      响应主体
+        Response / Preview
+  2.请求对象-request
+    1.什么是请求对象
+      request -- 请求对象,封装了所有与请求相关的信息
+      在Flask中可以通过request 对象 来获取请求信息
+      from flask import request
+    2.request中的常用成员
+      1.scheme:获取请求方案(协议)
+      2.method:获取请求方式(重点,取值为post或get)
+      3.args:获取使用get请求方式提交过来的数据(重点)
+      4.form:获取使用post请求方式提交过来的数据(重点)
+      5.cookies:获取cookies中的相关信息
+      6.headers:获取请求消息头的相关信息
+      7.files:获取上传的文件
+      8.path:获取请求的资源的具体路径(不带参数)
+      9.full_path:获取完整的请求资源的具体路径(带参数)
+      10.url:获取完整的请求地址,从协议开始
+    3.获取使用get请求方式提交过来的数据
+      1.get请求方式
+        1.表单允许实现get请求
+          <form action="" method="get">
+          姓名:<input type="text" name="uname">
+            <input type="submit">
+          </form>
+        2.请求地址后拼查询字符串(提交的参数)
+          <a href="/05-get?uname=rapwang&
+          upwd=tarenawc"></a>
+      2.post请求方式
+        只有在表单提交时才可以触发post请求
+        request.form 获取post提交的数据
+      练习：
+        1.访问地址 /06-form
+          1.如果是get请求,则去往06-form.html
+            包含一个表单 post 提交方式,提交地址 /06-form
+            1.用户名称-文本框
+            2.用户密码-密码框
+            3.电子邮箱-文本框
+            4.真是姓名-文本框
+            5.提交按钮
+          2.如果是post请求
+            则接收提交的数据,并输出在终端上

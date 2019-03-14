@@ -1,0 +1,205 @@
+2018      11.28      星期三
+
+
+
+
+Python Web 框架
+Flask 轻量级WEB框架
+AJAX 在WEB中完成异步请求和响应
+Django 重量级WEB框架
+
+1.静态网页 和 动态网页
+  静态网页：无法与服务器做动态交互的网页
+  动态网页：允许与服务器做动态交互的网页
+
+2.WEB 与 服务器
+  1.WEB：网页(HTML,CSS,JS)
+  2.服务器
+    能够给用户提供服务的机器就称为"服务器"
+    1.硬件 与 软件
+      硬件：一台计算机
+      软件：一个能够接受用户请求并给出响应的程序
+        1.APACHE
+        2.TOMCAT
+        3.IIS(Internet Information Service)
+        4.Nginx
+    2.作用
+      1.存储WEB上的信息
+      2.能够处理用户的请求(request)并给出响应(response)
+      3.执行服务器端的程序
+      4.具备一定的安全功能
+
+3.框架
+  1.什么是框架
+    框架是一个为了解决开放性问题而存在的一种结构
+    框架本身会提供一些基础的功能
+    我们只需要在基础功能之上搭建自己的操作即可
+  2.Python Web框架
+    1.Flask   -- 轻量级
+    2.WEBPY   -- 轻量级
+    3.Tornado -- 异步框架
+    4.  -- 重量级框架
+  3.框架模式
+    1.MTV
+      M：Models,模型层,主要负责根据数据库建模(类,表)
+      T：Templates,模板层,处理用户的显示的内容的,如：html
+      V：Views,视图,处理与用户交互的内容(请求和响应)
+    2.MVC
+      M：Models,模型层,主要负责根据数据库建模
+      V：Views,视图层,处理用户的显示的内容的,如：html
+      C：Controller,控制器,处理与用户交互的内容(请求和响应)
+
+4.Flask 框架
+  1.什么是Flask
+    Flask是一个基于Python并且依赖于Jinja2模板引擎和
+    Werkzeug WSGI服务的一个微型框架
+    Flask中包含一个轻量级的web 服务器主要用于在开发阶
+    段测试使用
+    WSGI:Web Server Gateway Interface (WEB服务网关接口)
+  2.安装Flask
+    1.查看已安装的Flask及其版本
+      在python的交互模式中
+      1.import flask 
+        没报错：已经安装了Flask,可以继续查看版本
+        报错：没安装
+      2.flask.__version__
+        已安装Flask的情况下,查看其版本
+    2.安装Flask步骤
+      sudo pip3 install flask 
+      pip3 download flask 
+  3.Flask 的初始化
+    from flask import Flask
+    app = Flask(__name__)
+    @app.route('/)
+    def xxx():
+        return str 
+    if __name__ == "__main__":
+        app.run(debug=True)
+
+
+5.Flask  --  路由
+  1.什么是路由
+    客户端发送请求给服务器,服务器需要将请求发送给
+    Flask程序实例
+    程序实例需要知道每个url请求对应的处理代码是谁
+    所以程序中必须要有一个url请求地址到python运行
+    函数的一个映射,处理url和函数之间的关系的程序就是"路由"
+  2.路由的体现
+    在Flask中,路由是通过@app.route() 装饰器来表示的
+    1.路由的基本表示
+      #http://localhost:5000/
+      @app.route('/')
+      def index():
+          return "My First Flask Demo"
+      #http://127.0.0.1:5000/manager/admin/login
+      @app.route('/manager/admin/login')
+      def login():
+          return "xxx"
+    2.带参数的路由
+      路由中可以携带参数来表示要传递到视图中的数据
+      http://localhost:5000/show/laowang
+      http://localhost:5000/show/wangwc
+      1.基本带参路由
+        @app.route('/show/<name>')
+        def show1(name):
+            name:表示的就是地址栏上传递的数据
+            pass
+      2.指定参数类型的路由
+        允许在声明路由时指定参数类型
+        避免了在程序中再转换
+        @app.route('/show/<name>/<int:age>')
+        def show(name,age):
+            name:字符串 
+            age:整数
+        int:类型转换器
+        Flask中所支持的类型转换器：
+        类型转换器                作用
+          缺省               字符串,不能有斜杠(/)
+          int               整型
+          float             浮点型
+          path              字符串，可以有斜杠(/)
+      3.多URL 的路由匹配
+        为多个url访问地址匹配到同一个视图函数
+        @app.route('/地址1')
+        @app.route('/地址2')
+        ....
+        def index():
+            pass
+    3.路由中设置HTTP请求方法
+      在Flask中默认只能接收get请求,无法接收post请求
+      在Flask中允许设定可以接收的请求方式
+      如果请求方式不匹配的话,会响应回405(Method Not Allowed)
+
+      @app.route('/xxx',methods=['POST','GET'])
+      def xxx():
+        该函数既能接收post请求也能接收get请求
+
+    4.URL的反向解析
+      正向解析:
+        程序自动解析,根据@app.route()中的访问路径来匹配
+        处理函数  
+      反向解析:
+        通过视图处理函数的名称自动生成对应的访问路径
+      在Flask中要实现反向解析：
+        url_for(funName,args)
+          funName:要生成地址的函数名
+          args:该地址中需要的参数
+
+@app.route('/admin/login/form/show')
+def show():
+    return "路径"
+
+@app.route('/url')
+def url():
+    url = url_for('show')
+    return "<a href='%s'>去往show</a>" % url
+
+
+6.模板 - Templates
+  1.什么是模板
+    模板,在Flask中就是允许响应给用户看的网页
+    在模板中,允许嵌入动态的内容
+    模板最终也会被解析成字符串再响应给客户端,这一过程称为"渲染"
+
+    Flask中,模板是依赖于Jinja2的模板系统
+    http://jinja.pocoo.org/
+  2.模板的设置
+    默认情况下,Flask会在程序目录中搜索一个templates 的目录
+    作为模板的存放目录
+  3.模板的渲染
+    作用：
+      在视图中,将模板文件(xx.html)渲染成字符串之后
+      在响应给浏览器
+    语法：
+      from flask import render_template
+      render_template('xx.html')
+      参数：要渲染的模板
+      返回值：该模板中的字符串内容
+      传递变量到模板中
+      render_template('xxx.html',变量名=值,变量名=值,...)
+      在模板中获取变量的值:{{变量名}}
+`
+      在01-homework.html中输出以下内容：
+      歌名：<<绿光>>
+      作词：宝强
+      作曲：乃亮
+      演唱：羽凡
+      1.访问路径 http://localhost:5000/homework
+      2.通过视图 渲染到 01-homework.html 模板上
+      3.歌名,作词,作曲,演唱的数据使用变量的方式进行传递
+
+
+
+pycharm: 
+    netstat -ano
+  pycharm:
+    taskkill/pid 5084/f
+    将PID杀死
+
+虚拟机: 
+  netstat -lptu
+  查找占用5000端口的PID
+  sudo kill -9 进程ID 
+  将PID杀死
+
+

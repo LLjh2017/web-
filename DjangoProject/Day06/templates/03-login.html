@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{#<form action="/03-login/" method="post">#}
+<form action="{% url 'login' %}" method="post">
+    {% csrf_token %}
+    <p>
+        Uname:<input type="text" name="uname">
+    </p>
+    <p>
+        Upass:<input type="password" name="upwd">
+    </p>
+    <p>
+        <input type="submit">
+    </p>
+</form>
+</body>
+</html>

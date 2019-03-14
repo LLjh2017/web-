@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="/11-register-stu" method="post">
+    <p>
+        姓名: <input type="text" name="sname">
+    </p>
+    <p>
+        年龄: <input type="number" name="sage">
+    </p>
+    <p>
+        班级:
+        <select name="classes">
+            {% for cls in list %}
+            <option value="{{cls.id}}">
+                {{cls.name}}
+            </option>
+            {% endfor %}
+        </select>
+    </p>
+    <p>
+        <input type="submit" value="注册">
+    </p>
+</form>
+</body>
+</html>

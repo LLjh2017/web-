@@ -1,0 +1,258 @@
+2018    12.24   星期一
+
+
+
+
+完成项目的人员
+用户
+需求分析师(分析用户的需求)
+产品经理(设计产品原型)
+UI设计师(设计项目显示效果)
+前端工程师(开发前端代码)
+后端工程师(开发后段代码)
+测试工程师(测试项目功能流程)
+运维工程师(部署项目上线)
+
+架构师(决定项目主体框架)
+项目经理(负责整体项目进程节点把控项目)
+
+了解项目
+了解项目流程
+了解项目功能
+判断可行性
+通过UI图分析功能
+判断可行性
+确定大体实现方法
+
+前后端分离
+
+设计表
+看页面>设计表>写前端页面>url>views>完成
+看页面>写前端页面>views>url>写前端页面>完成
+
+项目：天天果园fruitday
+
+功能点：
+登录
+注册
+首页展示
+商品详情
+购物车
+订单管理
+个人中心
+地址管理
+商品列表
+搜索
+
+对数据库操作
+登录(查询用户)
+注册(添加用户，查询用户)
+首页展示(查询数据)
+商品详情(查询数据)
+购物车(增删改查)
+订单管理(增删查)
+个人中心(查询数据)
+地址管理(增删改查)
+商品列表(查询数据)
+
+数据库：
+用户表
+地址表
+商品分类表
+商品表
+购物车表
+订单表
+
+设计表：
+1.用户表
+2.地址表(用户表 一对多)
+3.商品分类表
+4.商品表(商品分类表 一对多)
+5.购物车表(商品表 一对多 用户表 一对多)
+6.订单表(用户表 一对多)
+
+用户表(id,uname,upassword,email,isban)
+地址表(id,user(F外键),aname(收件人姓名),address(收件人地址),
+      phone(收件人手机号))
+商品分类表(id,title,desc(描述),picture,isdelete(是否删除))
+商品表(id,title(名称),price,unit(单位),desc,detail(商品详情),
+      picture,isdelete,type)
+购物车表(id,user,good,ccount(数量))
+订单表(id,user,orderNo(订单号),ads(收件人),acot(总数),
+      acount,cals(订单详情),orderStatus(订单状态))
+
+模块(app)
+userinfo(用户)
+memberapp(商品)
+cartinfo(购物车 订单)
+
+django-admin startproject FruitDay
+python3 manage.py startapp userinfo
+python3 manage.py startapp memberapp
+python3 manage.py startapp cartinfo
+
+
+开发人员架构
+项目流程 功能
+设计数据库表
+注册 make_password
+登录 check_password session
+注销 session
+首页展示 random get_object_or_404
+详情页 get_absolute_url 
+购物车 ajax 
+
+
+
+2018   12.26  晚
+
+
+目标:在浏览器输入 www.rabbit.com 回车
+  进入到Django项目主页
+1.概念
+  1.Django项目(Web应用)
+  2.Web服务
+    1.nginx  : 高并发处理的好 
+    2.Apache : 稳定
+      LNMP : Linux Nginx MySQL Python/PHP/Perl 
+      LAMP : Linux Apache MySQL Python/PHP/Perl
+  3.uwsgi
+    是Web服务器与Web框架之间一种简单而通用的接口
+2.项目部署
+  1.部署环境准备
+    1.确保Django项目能够运行
+    2.安装Web服务nginx(用apt-get去安装)
+      1.安装
+        sudo apt-get install nginx
+      2.启动
+        sudo /etc/init.d/nginx restart
+      3.验证
+        打开浏览器输入: 127.0.0.1:80 -> Welcome to Nginx
+    3.安装uwsgi(务必用pip3去安装)
+      1.安装
+        sudo pip3 install uwsgi
+      2.验证
+        uwsgi --http :9000 --chdir /home/tarena/myproject/fruitday/ --module fruitday.wsgi
+  2.在线商城部署
+    1.配置uwsgi(配置文件)
+      和nginx通信端口 自身启动占用的端口
+      1.在项目目录(manager.py所在路径)中新建uwsgi启动文件:fruitdayUwsgi.ini
+      2.在配置文件中写入如下内容:
+        [uwsgi]
+        # 指定和nginx通信的端口
+        socket=127.0.0.1:8001
+        # 项目路径
+        chdir=/home/tarena/myproject/fruitday
+        # wsgi.py路径
+        wsgi-file=fruitday/wsgi.py
+        # 进程数
+        processes=4
+        # 线程数
+        thread=2
+        # uwsgi自身占用端口
+        stats=127.0.0.1:8080
+    2.配置nginx(配置文件)
+      1.sudo -i 
+      2.cd /etc/nginx/sites-enabled/
+      3.vi projectNginx.conf
+        server{
+            # 指定本项目监听端口,浏览器输入端口
+            listen 80;
+            # 域名
+            server_name www.rabbit.com;
+            # 指定字符集
+            charset utf-8;
+
+            # 指定收集静态文件路径
+            location /static{
+                alias /home/tarena/myproject/fruitday/static;
+          }
+            # 和uwsgi通信端口和通信文件
+            location /{
+              include uwsgi_params;
+              uwsgi_pass 127.0.0.1:8001;
+          }
+            
+        }
+      4.拷贝uwsgi_params到项目根目录
+        1.sudo -i
+        2.cd /etc/nginx
+        3.cp uwsgi_params /home/tarena/myproject/fruitday
+      5.改掉nginx默认的server(80)
+        1.sudo -i 
+        2.cd /etc/nginx/sites-enabled
+        3.vi deault #把listen的端口由80改为800
+          server {
+            listen 800 default_server;
+            listen [::]:80 default_server;
+      6.重启nginx服务
+        sudo /etc/init.d/nginx restart      
+    3.收集静态文件
+      1.在settings.py文件中添加路径(STATIC_ROOT)
+        STATIC_ROOT = '/home/tarena/myproject/fruitday/static'
+      2.收集静态文件
+        1.cd /home/tarena/myproject/fruitday
+        2.python3 manage.py collectstatic
+    4.添加本地DNS解析
+      1.sudo -i 
+      2.vi /etc/hosts
+        127.0.0.1    www.rabbit.com
+      3.重启网络服务
+        sudo /etc/init.d/networking restart
+    5.uwsgi启动项目
+      1.切换到项目目录
+        cd /home/tarena/myproject/fruitday 
+      2.利用uwsgi启动项目
+        uwsgi --ini fruitdayUwsgi.ini 
+    6.打开浏览器,输入 www.rabbit.com
+      直接进入项目主页
+
+
+
+2018  12.27   晚 
+
+
+运维概述 
+1.什么是运维
+  服务器的运行维护
+2.名词
+  1.IDC(互联网数据中心)
+    服务器租用  机柜租用
+  2.监控软件
+    zabbix  nagios  cactti 
+  3.常用Linux操作系统
+    1.CentOS
+    2.Ubuntu
+    3.RedHat
+  4.虚拟化
+  5.nginx反向代理
+    1.流程
+      客户端 --> 反向代理服务器 --> 把请求转发给内部
+      网络的WEB服务器
+    2.作用
+      1.保证内网安全
+      2.负载均衡，优化网站的负载
+  6.负载均衡规则(nginx反向代理)
+    1.论询：逐一循环调度
+    2.权重(weight)：指定轮询几率，权重值和访问比例成正比
+    3.ip_hash：根据客户端IP分配固定的后端服务器
+  7.负载均衡的实现(修改nginx配置文件)
+    在nginx配置文件中做更改：
+    upstream servers{
+      # 定义集群
+      server 10.10.10.10;
+      server 10.10.10.11 weight=2;
+      server 10.10.10.12;
+      server 10.10.10.13 backup;
+    }
+    server{
+      listen 80;
+      ... ...
+    }
+
+2018   12.28    晚
+
+3.运维工具(XShell))
+
+
+

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{# 通过name属性，反向解析出 a01的地址 #}
+<a href="{% url 'a01' %}">
+    {% url 'a01' %}
+</a>
+</body>
+</html>

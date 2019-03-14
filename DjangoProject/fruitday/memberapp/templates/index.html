@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+  {% if request.session.user_name %}
+    <div>
+      欢迎您：{{ request.session.user_name }}
+      <span>|</span>
+      <a href="{% url 'login_out' %}">退出</a>
+    </div>
+  {% else %}
+    <div>
+      <a href="{% url 'login' %}">登录</a>
+      <span>|</span>
+      <a href="{% url 'register' %}">注册</a>
+    </div>
+  {% endif %}
+
+  <div>
+    <img src="{{ good_list.good_fruit_type.picture }}" alt="">
+  </div>
+  <div>
+    {% for good in good_list.fruit_goods %}
+      <li>
+        <a href="{{ good.get_absolute_url }}">{{ good.title }}</a>
+        <a href="{{ good.get_absolute_url }}"><img src="{{ good.picture }}" alt=""></a>
+        <div>{{ good.price }}</div>
+      </li>
+    {% endfor %}
+  </div>
+
+</body>
+</html>

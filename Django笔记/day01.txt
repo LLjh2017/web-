@@ -1,0 +1,86 @@
+2018       12.14       星期五
+ 
+
+
+
+Django
+1.什么是Django
+  Django是一个开源框架,2005年发布,采用Python语言编写的
+  早期主要是做新闻和内容管理的
+  Django本身提供了非常强大的后台管理系统
+
+  版本：2.1.4
+  使用：1.11.8
+  官网：http://www.djangoproject.com
+2.框架模式
+  MTV
+    M:Models
+    T:Templates
+    V:Views
+3.Django的安装
+  1.查看已安装的Django版本
+    1.进入到终端以及python交互模式
+      交互模式：python3/ipython3
+    2.交互模式输入：import django
+      1.如果未报错：当前环境中已经安装django
+      2.如果报错：没有django
+    3.查看版本
+      交互模式中：django.VERSION
+  2.安装Django
+    1.在线安装
+      pip3:安装到python3下
+      pip :安装到python2下
+
+      sudo pip3 install django
+      (默认安装Django的最新版本)
+    2.离线安装
+      1.下载安装包
+      2.sudo pip3 install Django-1.11.8.tar.gz
+4.Django框架的使用
+  1.创建Django项目
+    使用 django-admin 创建Django项目
+    语法：django-admin startproject 项目名
+  2.Django项目的结构介绍
+    1.manage.py
+      包含执行django中的各项操作的指令(子命令)
+      如:
+        启动服务：runserver
+        创建应用：
+        创建后台管理员
+    2.主目录(与项目名称一致的目录)
+      1.__init__.py
+        初始化文件,服务启动时自动运行
+      2.urls.py 
+        项目的基础url配置文件(基础的路由配置)
+      3.wsgi.py
+        Web Server Gateway Interface
+        Web 服务    网关     接口
+      4.settings.py
+        项目的主配置文件,启动服务器时自动运行
+        1.BASE_DIR：获取当前项目的绝对路径
+        2.DEBUG：是否启用调式模式
+            True：启动调式模式(开发环境中使用)
+            False：不启用调式(生产环境中使用)
+        3.ALLOWED_HOSTS
+          设置允许访问到本项目的地址列表
+          如果为空的话,表示只有本机
+          (127.0.0.1/localhost)才能访问
+
+          如果允许在局域网内被其他机器访问的话：
+          推荐写['*'],表示任何能够表示该机器的地址都能够
+          访问到当前项目
+
+          如果允许被其他机器访问的话,启动服务时必须使用一下方式
+          ./manage.py runserver 0.0.0.0:端口号
+        4.INSTALLED_APPS
+          指定已安装的应用,如果有自定义应用的话,必须要在此注册
+        5.MIDDLEWARE
+          指定中间件信息
+        6.TEMPLATES 
+          指定模板配置
+        7.DATABASES 
+          指定数据库配置
+        8.LANGUAGE_CODE
+          语言设置,如果需要中文的话,允许更改为 zh-Hans
+        9.TIME_ZONE
+          指定时区,如果指定中国时区的话,允许更改为 "Asia/Shanghai"
